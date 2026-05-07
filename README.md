@@ -13,7 +13,8 @@ Currently active duty Air Force working in IT infrastructure.
 |-------|------|
 | Hypervisor | Proxmox VE 9.1.1 (3-node cluster) |
 | Networking | pfSense + VLANs on Netgear GS308E |
-| VMs | Rocky Linux 9.7 (k3s nodes provisioned, k3s not yet installed) |
+| Kubernetes | k3s v1.35.4 (1 control plane, 2 workers) |
+| OS | Rocky Linux 9.7 |
 
 ## Hardware
 
