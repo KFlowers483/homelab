@@ -24,7 +24,12 @@ Control plane on pve1, workers on pve2 and pve3.
 - [x] VMs provisioned
 - [x] Rocky Linux 9.7 installed
 - [x] System updated
-- [ ] k3s installed on control plane
-- [ ] Workers joined to cluster
-- [ ] Traefik configured
+- [x] k3s installed on control plane
+- [x] Workers joined to cluster
+- [ ] Firewall ports opened
 - [ ] MetalLB configured
+- [ ] Traefik configured
+- [ ] Longhorn storage configured
+- [ ] ArgoCD installed
+- [ ] Grafana + Prometheus installed
+- [ ] Vaultwarden installed
