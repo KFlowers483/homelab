@@ -42,3 +42,4 @@ firewall rules between segments.
 ## Docs
 
 - [Proxmox Cluster Setup](docs/proxmox-cluster.md)
+- [k3s setup](docs/k3s-setup.md)
