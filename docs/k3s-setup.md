@@ -55,8 +55,73 @@ firewall-cmd --reload
 
 10.42.0.0/16 is the pod network, 10.43.0.0/16 is the service network.
 
-Skipped ports 2379-2380 (etcd) — only needed for HA clusters with
-embedded etcd. Single control plane uses SQLite.
+## MetalLB
+
+k3s ships with its own load balancer (ServiceLB) and a bundled Traefik
+install. I disabled both — anything k3s manages on its own lives outside
+my control and outside this repo, and the end goal is everything defined
+in Git. MetalLB replaces ServiceLB, and Traefik will get reinstalled
+later via Helm where I own the config.
+
+Disabled the bundled components on the control plane:
+
+```bash
+cat > /etc/rancher/k3s/config.yaml << 'EOF'
+disable:
+  - servicelb
+  - traefik
+EOF
+systemctl restart k3s
+```
+
+k3s reads that config file at startup like command-line flags, and on
+restart it cleaned up the old traefik and svclb pods on its own.
+
+MetalLB speakers gossip with each other over port 7946 to coordinate
+which node announces which IP, so this got opened on all three nodes:
+
+```bash
+firewall-cmd --permanent --add-port=7946/tcp
+firewall-cmd --permanent --add-port=7946/udp
+firewall-cmd --reload
+```
+
+Installed MetalLB v0.15.2 and gave it a pool of addresses on VLAN 30:
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.15.2/config/manifests/metallb-native.yaml
+```
+
+```yaml
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: vlan30-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 192.168.30.200-192.168.30.220
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: vlan30-l2
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - vlan30-pool
+```
+
+The pool is the range MetalLB is allowed to hand out (kept outside the
+DHCP range on VLAN 30). The L2Advertisement makes a speaker pod answer
+ARP for whatever IPs get assigned, so the rest of the network knows
+where to send traffic.
+
+Verified with a throwaway nginx deployment exposed as a LoadBalancer
+service — it pulled 192.168.30.201 from the pool and loaded from a
+browser on the LAN, across VLANs. Note it grabbed .201, not .200 —
+MetalLB doesn't assign sequentially, it just picks a free address.
+Deleted the test after.
 
 ## Status
 
