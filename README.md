@@ -34,7 +34,7 @@ firewall rules between segments.
 - [x] Network design and VLAN configuration
 - [x] Proxmox 3-node cluster
 - [x] k3s VM provisioning
-- [ ] k3s cluster install and configuration
+- [x] k3s cluster install and configuration
 - [ ] Services deployment (Traefik, ArgoCD, Longhorn, etc.)
 - [ ] GitOps pipeline via GitHub Actions + ArgoCD
 - [ ] Observability stack (Prometheus + Grafana)
