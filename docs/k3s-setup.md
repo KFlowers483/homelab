@@ -123,6 +123,77 @@ browser on the LAN, across VLANs. Note it grabbed .201, not .200 —
 MetalLB doesn't assign sequentially, it just picks a free address.
 Deleted the test after.
 
+## Traefik via Helm
+
+First time using Helm. Short version: it's a package manager for
+Kubernetes — a chart is a bundle of YAML templates, you supply a
+values file for the settings you want to change, and Helm installs
+the whole stack as one release it can upgrade or roll back later.
+
+Installing the Helm CLI failed at first because Rocky Minimal doesn't
+ship with tar (or git). Minimal means minimal.
+
+```bash
+dnf install -y tar git
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+```
+
+Helm also couldn't find the cluster ("localhost:8080 connection
+refused") — k3s puts its kubeconfig in a nonstandard spot and the
+bundled kubectl knows about it but Helm doesn't:
+
+```bash
+echo 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml' >> /root/.bashrc
+```
+
+The actual install. Only one value overridden from chart defaults —
+pinning Traefik to a static IP from the MetalLB pool, since this is
+the front door everything will point at and I don't want it moving:
+
+```yaml
+# traefik-values.yaml
+service:
+  annotations:
+    metallb.io/loadBalancerIPs: 192.168.30.200
+```
+
+```bash
+helm repo add traefik https://traefik.github.io/charts
+helm repo update
+helm install traefik traefik/traefik --namespace traefik --create-namespace -f traefik-values.yaml
+```
+
+### Troubleshooting: the IP that wouldn't assign
+
+The new service sat at <pending>. `kubectl describe svc` showed the
+reason in Events: the old bundled Traefik's Service object was still
+alive in kube-system and holding .200. Disabling traefik in k3s
+config killed the pods but this Service survived — and it's also why
+my MetalLB test service got .201 instead of .200 last time. The clue
+was there and I missed it.
+
+Deleting it didn't work either — kubectl said deleted, but the object
+stayed, AGE still 36d. Turns out it had a finalizer from ServiceLB
+(a cleanup step that has to sign off before an object is removed),
+and ServiceLB is disabled now, so nothing was ever going to sign off.
+Stuck terminating forever.
+
+```bash
+kubectl patch svc traefik -n kube-system -p '{"metadata":{"finalizers":[]}}' --type=merge
+```
+
+Force-clearing finalizers skips whatever cleanup the owner intended,
+so it's only safe when the owning controller is confirmed gone — which
+it was. The moment the old service actually deleted, the MetalLB
+controller assigned .200 to the new Traefik on its own. No retry
+needed — that's the reconciliation loop doing its job.
+
+Verified: one traefik service cluster-wide, EXTERNAL-IP 192.168.30.200,
+and browsing to it returns a 404 from Traefik — which is correct,
+since no routes are defined yet.
+
+Next up: first IngressRoute so Traefik has something to route.
+
 ## Status
 
 - [x] VMs provisioned
