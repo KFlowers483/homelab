@@ -35,9 +35,11 @@ firewall rules between segments.
 - [x] Proxmox 3-node cluster
 - [x] k3s VM provisioning
 - [x] k3s cluster install and configuration
-- [ ] Services deployment (Traefik, ArgoCD, Longhorn, etc.)
-- [ ] GitOps pipeline via GitHub Actions + ArgoCD
+- [x] Load balancing + ingress (MetalLB, Traefik)
+- [x] GitOps via ArgoCD (apps managed from this repo)
+- [ ] cert-manager + internal TLS
 - [ ] Observability stack (Prometheus + Grafana)
+- [ ] Persistent storage (Longhorn)
 
 ## Docs
 
