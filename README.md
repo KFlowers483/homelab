@@ -15,6 +15,9 @@ Currently active duty Air Force working in IT infrastructure.
 | Networking | pfSense + VLANs on Netgear GS308E |
 | Kubernetes | k3s v1.35.4 (1 control plane, 2 workers) |
 | OS | Rocky Linux 9.7 |
+| Load balancer | MetalLB v0.15.2 (L2 mode, VLAN 30 pool)   |
+| Ingress       | Traefik (Helm, ArgoCD-managed)            |
+| GitOps        | ArgoCD — apps defined in `apps/`          |
 
 ## Hardware
 
@@ -28,6 +31,12 @@ Currently active duty Air Force working in IT infrastructure.
 5 VLANs — management, Proxmox, k3s/services, LAN, and storage 
 (planned). Inter-VLAN routing handled by pfSense with explicit 
 firewall rules between segments.
+
+## Repo layout
+
+- `apps/` — ArgoCD Application definitions (what ArgoCD watches)
+- `k3s/` — the manifests and Helm values those Applications point at
+- `docs/` — setup notes and troubleshooting, written as I go
 
 ## Progress
 
