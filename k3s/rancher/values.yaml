@@ -1,0 +1,9 @@
+hostname: rancher.home
+replicas: 1
+ingress:
+  ingressClassName: traefik
+  tls:
+    source: rancher
+antiAffinity: preferred
+auditLog:
+  level: 0
