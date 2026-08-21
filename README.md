@@ -18,6 +18,9 @@ Currently active duty Air Force working in IT infrastructure.
 | Load balancer | MetalLB v0.15.2 (L2 mode, VLAN 30 pool)   |
 | Ingress       | Traefik (Helm, ArgoCD-managed)            |
 | GitOps        | ArgoCD — apps defined in `apps/`          |
+| Certificates  | cert-manager + internal homelab CA        |
+| Cluster mgmt  | Rancher (`rancher.home`)                  |
+| Monitoring    | Uptime Kuma (`uptime.home`)               |
 
 ## Hardware
 
@@ -46,7 +49,11 @@ firewall rules between segments.
 - [x] k3s cluster install and configuration
 - [x] Load balancing + ingress (MetalLB, Traefik)
 - [x] GitOps via ArgoCD (apps managed from this repo)
-- [ ] cert-manager + internal TLS
+- [x] App-of-apps root Application — new services deploy on push
+- [x] cert-manager + internal CA
+- [x] Rancher for cluster management
+- [x] Wildcard DNS for *.home
+- [ ] Internal TLS on all services
 - [ ] Observability stack (Prometheus + Grafana)
 - [ ] Persistent storage (Longhorn)
 
@@ -54,3 +61,5 @@ firewall rules between segments.
 
 - [Proxmox Cluster Setup](docs/proxmox-cluster.md)
 - [k3s setup](docs/k3s-setup.md)
+- [Rancher](docs/rancher.md)
+- [k9s](docs/k9s.md)
