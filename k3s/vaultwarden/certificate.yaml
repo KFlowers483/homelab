@@ -1,0 +1,19 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vaultwarden-tls
+  namespace: vaultwarden
+spec:
+  secretName: vaultwarden-tls
+  duration: 2160h        # 90 days
+  renewBefore: 360h      # renew at 15 days remaining
+  commonName: vault.home
+  dnsNames:
+    - vault.home
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: homelab-ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
