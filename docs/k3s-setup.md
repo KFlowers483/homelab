@@ -202,9 +202,9 @@ Next up: first IngressRoute so Traefik has something to route.
 - [x] k3s installed on control plane
 - [x] Workers joined to cluster
 - [x] Firewall ports opened
-- [ ] MetalLB configured
-- [ ] Traefik configured
+- [x] MetalLB configured
+- [x] Traefik configured
 - [ ] Longhorn storage configured
-- [ ] ArgoCD installed
+- [x] ArgoCD installed
 - [ ] Grafana + Prometheus installed
-- [ ] Vaultwarden installed
+- [x] Vaultwarden installed
