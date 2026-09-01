@@ -1,0 +1,43 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: vaultwarden
+  namespace: vaultwarden
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`vault.home`)
+      kind: Rule
+      services:
+        - name: vaultwarden
+          port: 80
+  tls:
+    secretName: vaultwarden-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: vaultwarden-redirect
+  namespace: vaultwarden
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`vault.home`)
+      kind: Rule
+      middlewares:
+        - name: redirect-https
+      services:
+        - name: vaultwarden
+          port: 80
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: vaultwarden
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
