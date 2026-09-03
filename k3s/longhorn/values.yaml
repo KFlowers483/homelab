@@ -1,0 +1,40 @@
+persistence:
+  defaultClass: false
+  defaultClassReplicaCount: 2
+  reclaimPolicy: Retain
+  defaultFsType: ext4
+
+defaultSettings:
+  createDefaultDiskLabeledNodes: true
+  defaultDataPath: /var/lib/longhorn
+  defaultReplicaCount: 2
+  replicaSoftAntiAffinity: false
+  replicaZoneSoftAntiAffinity: false
+  concurrentReplicaRebuildPerNodeLimit: 1
+  concurrentAutomaticEngineUpgradePerNodeLimit: 1
+  storageMinimalAvailablePercentage: 25
+  storageOverProvisioningPercentage: 100
+  nodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
+  replicaReplenishmentWaitInterval: 600
+  autoSalvage: true
+  nodeDrainPolicy: block-for-eviction-if-contains-last-replica
+  defaultLonghornStaticStorageClass: longhorn
+
+csi:
+  attacherReplicaCount: 2
+  provisionerReplicaCount: 2
+  resizerReplicaCount: 2
+  snapshotterReplicaCount: 2
+
+longhornUI:
+  replicas: 1
+
+longhornManager:
+  priorityClass: system-node-critical
+
+ingress:
+  enabled: false
+
+service:
+  ui:
+    type: ClusterIP
