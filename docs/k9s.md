@@ -1,7 +1,7 @@
 # k9s
 
-Terminal UI for Kubernetes. Not infrastructure — nothing in this repo
-depends on it — but it replaces about thirty `kubectl get` commands with
+Terminal UI for Kubernetes. Not infrastructure nothing in this repo
+depends on it but it replaces about thirty `kubectl get` commands with
 one screen, and when something is stuck it's faster at telling me why.
 
 ## Install (control plane)
@@ -17,7 +17,7 @@ cluster being down.
 
 ## From WSL
 
-Better setup — real terminal, no SSH lag. Copy the kubeconfig and fix the
+Better setup real terminal, no SSH lag. Copy the kubeconfig and fix the
 server address; k3s writes `127.0.0.1` into it because it assumes you're
 on the node.
 
