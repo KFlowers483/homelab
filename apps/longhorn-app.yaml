@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: longhorn
+  namespace: argocd
+spec:
+  project: default
+
+  sources:
+    - repoURL: https://charts.longhorn.io
+      chart: longhorn
+      targetRevision: 1.12.1
+      helm:
+        valueFiles:
+          - $values/k3s/longhorn/values.yaml
+    - repoURL: https://github.com/KFlowers483/homelab.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/KFlowers483/homelab.git
+      targetRevision: main
+      path: k3s/longhorn/extras
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: longhorn-system
+
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 20s
+        factor: 2
+        maxDuration: 5m
+
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      jsonPointers:
+        - /status
+        - /spec/preserveUnknownFields
+    - group: longhorn.io
+      kind: Node
+      jsonPointers:
+        - /spec/disks

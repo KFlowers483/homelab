@@ -1,0 +1,90 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: uptime-kuma-pvc-migrate
+  namespace: uptime-kuma
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app: uptime-kuma-migrate
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsUser: 0
+      containers:
+        - name: copy
+          image: alpine:3.20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          command: ["/bin/sh", "-e"]
+          args:
+            - -c
+            - |
+              set -eu
+
+              SRC=/src
+              DST=/dst
+
+              echo "=== source ==="
+              ls -la "$SRC"
+              echo "=== destination ==="
+              ls -la "$DST"
+
+              SRC_FILES=$(find "$SRC" -type f | wc -l)
+              if [ "$SRC_FILES" -eq 0 ]; then
+                echo "FATAL: source is empty"
+                exit 1
+              fi
+
+              DST_FILES=$(find "$DST" -mindepth 1 ! -name 'lost+found' | wc -l)
+              if [ "$DST_FILES" -ne 0 ]; then
+                echo "FATAL: destination is not empty ($DST_FILES entries)"
+                exit 1
+              fi
+
+              for f in "$SRC"/*.db-wal "$SRC"/*.db-shm "$SRC"/*.db-journal; do
+                if [ -e "$f" ]; then
+                  echo "FATAL: SQLite sidecar file present: $f"
+                  exit 1
+                fi
+              done
+
+              echo "=== copying $SRC_FILES files ==="
+              cp -a "$SRC"/. "$DST"/
+              sync
+
+              SRC_COUNT=$(find "$SRC" -type f | wc -l)
+              DST_COUNT=$(find "$DST" -type f ! -path "$DST/lost+found/*" | wc -l)
+              SRC_BYTES=$(find "$SRC" -type f -exec cat {} + | wc -c)
+              DST_BYTES=$(find "$DST" -type f ! -path "$DST/lost+found/*" -exec cat {} + | wc -c)
+
+              echo "files : src=$SRC_COUNT dst=$DST_COUNT"
+              echo "bytes : src=$SRC_BYTES dst=$DST_BYTES"
+
+              if [ "$SRC_COUNT" -ne "$DST_COUNT" ] || [ "$SRC_BYTES" -ne "$DST_BYTES" ]; then
+                echo "FATAL: verification failed"
+                exit 1
+              fi
+
+              echo "=== MIGRATION VERIFIED ==="
+          volumeMounts:
+            - name: src
+              mountPath: /src
+              readOnly: true
+            - name: dst
+              mountPath: /dst
+      volumes:
+        - name: src
+          persistentVolumeClaim:
+            claimName: uptime-kuma-data
+            readOnly: true
+        - name: dst
+          persistentVolumeClaim:
+            claimName: uptime-kuma-data-longhorn
