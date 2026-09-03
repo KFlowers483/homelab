@@ -1,3 +1,7 @@
+preUpgradeChecker:
+  jobEnabled: false
+  upgradeVersionCheck: true
+
 persistence:
   defaultClass: false
   defaultClassReplicaCount: 2
