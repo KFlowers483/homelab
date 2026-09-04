@@ -13,7 +13,7 @@ defaultSettings:
   defaultDataPath: /var/lib/longhorn
   defaultReplicaCount: 2
   replicaSoftAntiAffinity: false
-  replicaZoneSoftAntiAffinity: false
+  replicaZoneSoftAntiAffinity: true
   concurrentReplicaRebuildPerNodeLimit: 1
   concurrentAutomaticEngineUpgradePerNodeLimit: 1
   storageMinimalAvailablePercentage: 25
