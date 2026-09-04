@@ -2,10 +2,8 @@
 
 Building out a full home lab from scratch: a 3-node Proxmox cluster
 running on Lenovo ThinkCentre M720q Tinys with a k3s Kubernetes cluster
-on top. I already work with infrastructure day to day, this lab is how
-I go deeper, break things on my own time, and keep building on what I know.
+on top.
 
-Currently active duty Air Force working in IT infrastructure.
 
 ## What's Running
 
