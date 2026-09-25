@@ -1,0 +1,43 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: planka
+  namespace: planka
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`planka.home`)
+      kind: Rule
+      services:
+        - name: planka
+          port: 1337
+  tls:
+    secretName: planka-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: planka-redirect
+  namespace: planka
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`planka.home`)
+      kind: Rule
+      middlewares:
+        - name: redirect-https
+      services:
+        - name: planka
+          port: 1337
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: planka
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true

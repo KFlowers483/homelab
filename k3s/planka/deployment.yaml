@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: planka
+  namespace: planka
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: planka
+  template:
+    metadata:
+      labels:
+        app: planka
+    spec:
+      # Image runs as the node user (1000). Without this the fresh Longhorn
+      # volume is root-owned and uploads to /app/data fail.
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+        # Hold off until Postgres answers, otherwise db/init.js fails on first
+        # boot and the pod crashloops until the database catches up.
+        - name: wait-for-postgres
+          image: postgres:16-alpine
+          command:
+            - sh
+            - -c
+            - until pg_isready -h planka-postgres -p 5432; do sleep 2; done
+      containers:
+        - name: planka
+          image: ghcr.io/plankanban/planka:2.2.1
+          ports:
+            - name: http
+              containerPort: 1337
+          env:
+            - name: BASE_URL
+              value: "https://planka.home"
+            - name: TRUST_PROXY
+              value: "true"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: planka-secrets
+                  key: DATABASE_URL
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: planka-secrets
+                  key: SECRET_KEY
+            - name: DEFAULT_ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: planka-secrets
+                  key: DEFAULT_ADMIN_EMAIL
+            - name: DEFAULT_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: planka-secrets
+                  key: DEFAULT_ADMIN_PASSWORD
+            - name: DEFAULT_ADMIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: planka-secrets
+                  key: DEFAULT_ADMIN_NAME
+            - name: DEFAULT_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: planka-secrets
+                  key: DEFAULT_ADMIN_USERNAME
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 768Mi
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 5
+            failureThreshold: 30
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 30
+            failureThreshold: 5
+            timeoutSeconds: 5
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: planka-data
