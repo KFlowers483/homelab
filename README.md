@@ -84,6 +84,7 @@ between segments. Full topology and VLAN/IP plan in
 - [k3s setup](docs/k3s-setup.md)
 - [Rancher](docs/rancher.md)
 - [k9s](docs/k9s.md)
+- [Planka](docs/planka.md)
 
 ## Troubleshooting writeups
 
